@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# ---------------------------------------------------
+# Linux Shell Script Example
+# Purpose : Install and Configure NGINX Automatically
+# Author  : Yuvraj
+# ---------------------------------------------------
+
+# Print message on terminal
+echo "Starting NGINX Installation..."
+
+# Update Ubuntu package repository
+sudo apt update -y
+
+# Install NGINX package
+sudo apt install nginx -y
+
+# Check whether installation was successful
+if [ $? -eq 0 ]
+then
+    echo "NGINX Installed Successfully"
+else
+    echo "NGINX Installation Failed"
+    exit 1
+fi
+
+# Start NGINX service
+sudo systemctl start nginx
+
+# Enable NGINX service after reboot
+sudo systemctl enable nginx
+
+# Check service status
+sudo systemctl status nginx --no-pager
+
+# Create custom HTML page
+echo "<h1>Linux Shell Scripting Deployment Success</h1>" | sudo tee /var/www/html/index.html
+
+# Display server IP
+SERVER_IP=$(hostname -I | awk '{print $1}')
+
+# Print website URL
+echo "Application URL : http://$SERVER_IP"
+
+# Verify NGINX response
+curl http://$SERVER_IP
+
+# Final success message
+echo "Script Execution Completed Successfully"
