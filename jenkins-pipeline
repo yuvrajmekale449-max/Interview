@@ -1,0 +1,90 @@
+// Jenkins Pipeline Script (Jenkinsfile)
+
+// pipeline block starts the Jenkins pipeline
+pipeline {
+
+    // Run pipeline on any available Jenkins agent/node
+    agent any
+
+    // Environment variables used in pipeline
+    environment {
+
+        // Public IP of your server/EC2 instance
+        SERVER_IP = "YOUR_SERVER_IP"
+
+        // Username used to login into server
+        SERVER_USER = "ubuntu"
+    }
+
+    // Stages section contains all steps of CI/CD
+    stages {
+
+        // Stage 1 : Install NGINX on remote server
+        stage('Install NGINX') {
+
+            steps {
+
+                // Use SSH credentials stored in Jenkins
+                sshagent(credentials: ['server-ssh-key']) {
+
+                    // Execute shell commands
+                    sh """
+
+                    # Connect to remote server using SSH
+                    ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_IP} '
+
+                        # Update Ubuntu packages
+                        sudo apt update -y
+
+                        # Install NGINX web server
+                        sudo apt install nginx -y
+
+                        # Start NGINX service
+                        sudo systemctl start nginx
+
+                        # Enable NGINX service after reboot
+                        sudo systemctl enable nginx
+
+                        # Check NGINX service status
+                        sudo systemctl status nginx --no-pager
+
+                        # Create custom HTML page
+                        echo "<h1>Jenkins CI/CD Pipeline Success</h1>" | sudo tee /var/www/html/index.html
+
+                    '
+                    """
+                }
+            }
+        }
+
+        // Stage 2 : Verify deployment
+        stage('Verify NGINX') {
+
+            steps {
+
+                // Access deployed webpage using curl
+                sh """
+
+                curl http://${SERVER_IP}
+
+                """
+            }
+        }
+    }
+
+    // Post section runs after pipeline execution
+    post {
+
+        // Runs if pipeline is successful
+        success {
+
+            echo 'NGINX Installed and Deployed Successfully!'
+        }
+
+        // Runs if pipeline fails
+        failure {
+
+            echo 'Pipeline Failed!'
+        }
+    }
+}

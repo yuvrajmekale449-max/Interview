@@ -1,0 +1,233 @@
+# =========================================================
+# FILE NAME : webserver.yml
+# PURPOSE   : Install and Configure Nginx Web Server
+# =========================================================
+
+---
+# Playbook starts here
+- name: Install and Configure Nginx
+
+  # Target server group from inventory
+  hosts: web
+
+  # Run tasks as sudo/root user
+  become: yes
+
+  # Variables section
+  vars:
+
+    # Package name variable
+    package_name: nginx
+
+    # Service name variable
+    service_name: nginx
+
+  # Tasks section
+  tasks:
+
+    # -----------------------------------------------------
+    # Update package manager cache
+    # -----------------------------------------------------
+    - name: Update apt cache
+
+      # apt module used in Ubuntu/Debian
+      apt:
+        update_cache: yes
+
+    # -----------------------------------------------------
+    # Install nginx package
+    # -----------------------------------------------------
+    - name: Install nginx
+
+      # Package installation
+      apt:
+
+        # Package name
+        name: "{{ package_name }}"
+
+        # Ensure package installed
+        state: present
+
+    # -----------------------------------------------------
+    # Start nginx service
+    # -----------------------------------------------------
+    - name: Start nginx service
+
+      # Service module
+      service:
+
+        # Service name
+        name: "{{ service_name }}"
+
+        # Start service
+        state: started
+
+        # Enable service on boot
+        enabled: yes
+
+    # -----------------------------------------------------
+    # Copy custom webpage
+    # -----------------------------------------------------
+    - name: Copy index.html file
+
+      # Copy module
+      copy:
+
+        # Source file from Ansible server
+        src: index.html
+
+        # Destination path in target server
+        dest: /var/www/html/index.html
+
+      # Notify handler if file changes
+      notify:
+        - Restart nginx
+
+  # ======================================================
+  # Handlers Section
+  # Handlers run only when notified
+  # ======================================================
+  handlers:
+
+    - name: Restart nginx
+
+      # Restart service
+      service:
+        name: nginx
+        state: restarted
+
+# =========================================================
+# IMPORTANT INTERVIEW NOTES
+# =========================================================
+
+# hosts
+# -----
+# Defines target servers from inventory file.
+
+# become
+# -------
+# Used for sudo/root privileges.
+
+# vars
+# ----
+# Stores reusable variables.
+
+# tasks
+# -----
+# List of operations executed sequentially.
+
+# handlers
+# --------
+# Triggered only when notified.
+# Mostly used for service restart.
+
+# notify
+# ------
+# Calls handler when task changes.
+
+# state: present
+# --------------
+# Ensures package installed.
+
+# state: absent
+# -------------
+# Removes package.
+
+# enabled: yes
+# ------------
+# Starts service automatically after reboot.
+
+# Idempotency
+# ------------
+# Running playbook multiple times gives same result.
+
+# Agentless
+# ----------
+# Ansible uses SSH. No agent required.
+
+# YAML Rules
+# -----------
+# Uses spaces only.
+# No tabs allowed.
+
+# =========================================================
+# IMPORTANT INTERVIEW COMMANDS
+# =========================================================
+
+# Check ansible version
+# ansible --version
+
+# Check inventory hosts
+# ansible-inventory --list
+
+# Ping all servers
+# ansible all -m ping
+
+# Run playbook
+# ansible-playbook webserver.yml
+
+# Run with inventory file
+# ansible-playbook -i hosts webserver.yml
+
+# Dry run (no changes)
+# ansible-playbook webserver.yml --check
+
+# Syntax check
+# ansible-playbook webserver.yml --syntax-check
+
+# Detailed logs
+# ansible-playbook webserver.yml -vvv
+
+# Run specific tag
+# ansible-playbook webserver.yml --tags install
+
+# List all hosts
+# ansible all --list-hosts
+
+# Gather server information
+# ansible all -m setup
+
+# Execute shell command
+# ansible all -m shell -a "df -h"
+
+# Copy file using ad-hoc command
+# ansible all -m copy -a "src=test.txt dest=/tmp/test.txt"
+
+# Install package using ad-hoc command
+# ansible all -m apt -a "name=git state=present" --become
+
+# Restart service using ad-hoc command
+# ansible web -m service -a "name=nginx state=restarted" --become
+
+# =========================================================
+# MOST ASKED INTERVIEW QUESTIONS
+# =========================================================
+
+# Q1. What is Ansible?
+# Automation and configuration management tool.
+
+# Q2. Why Ansible is called agentless?
+# Because it uses SSH and no agent installation required.
+
+# Q3. What is Inventory?
+# File containing managed server details.
+
+# Q4. What is Playbook?
+# YAML file containing automation tasks.
+
+# Q5. Difference between shell and command module?
+# shell supports pipes and redirection.
+# command is more secure.
+
+# Q6. What is Handler?
+# Task triggered by notify.
+
+# Q7. What is Ansible Vault?
+# Used to encrypt sensitive data.
+
+# Q8. What is Idempotency?
+# Multiple executions produce same result.
+
+# =========================================================
+# END OF PLAYBOOK
+# =========================================================
